@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Design Monks | Secure Checkout</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== RESET & VARIABLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-green: #39FF14;
+            --neon-green-dim: #2CCF00;
+            --white: #FFFFFF;
+            --off-white: #F9F9F9;
+            --black: #0A0A0A;
+            --dark-gray: #111111;
+            --medium-gray: #1A1A1A;
+            --light-gray: #2A2A2A;
+            --border-gray: #333333;
+            
+            --font-primary: 'Inter', sans-serif;
+            
+            --shadow-neon: 0 0 20px rgba(57, 255, 20, 0.3);
+            --shadow-neon-hover: 0 0 30px rgba(57, 255, 20, 0.5);
+            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.3);
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--black);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background animation */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .bg-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(57, 255, 20, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: bgShift 40s linear infinite;
+        }
+        @keyframes bgShift {
+            0% { transform: translateX(0) translateY(0) rotate(0deg); }
+            100% { transform: translateX(5%) translateY(3%) rotate(1deg); }
+        }
+        .bg-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 40%, rgba(57,255,20,0.03) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(57,255,20,0.04) 0%, transparent 45%);
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+        @keyframes pulseGlow {
+            0%,100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            margin-bottom: 2rem;
+        }
+
+        h2 span {
+            color: var(--neon-green);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.2rem 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-gray);
+            z-index: 1000;
+            animation: fadeInDown 1s ease;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--neon-green);
+            font-weight: 500;
+        }
+        .secure-badge svg {
+            width: 20px;
+            fill: var(--neon-green);
+        }
+
+        /* ===== PURCHASE PAGE LAYOUT ===== */
+        .purchase-page {
+            padding: 8rem 0 4rem;
+            min-height: 100vh;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* ----- Form Card (Left Column) ----- */
+        .form-card {
+            background: var(--medium-gray);
+            border-radius: 2rem;
+            border: 1px solid var(--border-gray);
+            padding: 2.5rem;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .form-card:hover {
+            border-color: var(--neon-green);
+            box-shadow: var(--shadow-neon);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .form-title span {
+            color: var(--neon-green);
+        }
+
+        /* Website selector - prominent */
+        .website-selector {
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 1rem;
+            border: 1px solid var(--neon-green);
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #CCC;
+            font-weight: 500;
+        }
+        .form-label span {
+            color: var(--neon-green);
+            margin-left: 0.25rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: var(--black);
+            border: 1px solid var(--border-gray);
+            border-radius: 1rem;
+            color: var(--white);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: var(--font-primary);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--neon-green);
+            box-shadow: var(--shadow-neon);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Fieldset styling */
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        fieldset:disabled {
+            opacity: 0.5;
+        }
+        
+        fieldset:disabled .form-input,
+        fieldset:disabled .form-select {
+            pointer-events: none;
+            background: var(--dark-gray);
+        }
+
+        /* Section headers */
+        .section-header {
+            margin: 2rem 0 1rem;
+            color: var(--neon-green);
+            font-size: 1.3rem;
+            border-bottom: 1px solid var(--border-gray);
+            padding-bottom: 0.5rem;
+        }
+
+        /* ----- Summary Card (Right Column) ----- */
+        .summary-card {
+            background: var(--medium-gray);
+            border-radius: 2rem;
+            border: 1px solid var(--border-gray);
+            padding: 2.5rem;
+            position: sticky;
+            top: 100px;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .summary-card:hover {
+            border-color: var(--neon-green);
+            box-shadow: var(--shadow-neon);
+        }
+
+        .summary-title {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--neon-green);
+        }
+
+        .plan-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-gray);
+        }
+        .plan-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .plan-price {
+            color: var(--neon-green);
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .summary-breakdown {
+            padding: 1.5rem 0;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            color: #AAA;
+        }
+        .summary-row.total {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-gray);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        .total-price {
+            color: var(--neon-green);
+        }
+
+        /* Coupon Code Section */
+        .coupon-section {
+            margin: 2rem 0;
+            padding: 1.5rem 0;
+            border-top: 1px dashed var(--border-gray);
+            border-bottom: 1px dashed var(--border-gray);
+        }
+        
+        .coupon-row {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+        
+        .coupon-input {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            background: var(--black);
+            border: 1px solid var(--border-gray);
+            border-radius: 2rem;
+            color: var(--white);
+            font-size: 0.95rem;
+        }
+        
+        .coupon-input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+        }
+        
+        .apply-coupon-btn {
+            padding: 0.8rem 1.8rem;
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        
+        .apply-coupon-btn:hover:not(:disabled) {
+            background: var(--neon-green);
+            color: var(--black);
+            box-shadow: var(--shadow-neon);
+        }
+        
+        .apply-coupon-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .coupon-message {
+            margin-top: 0.8rem;
+            font-size: 0.9rem;
+            color: #888;
+        }
+        
+        .coupon-message.success {
+            color: var(--neon-green);
+        }
+        
+        .coupon-message.error {
+            color: #ff4d4d;
+        }
+
+        .payment-icons {
+            display: flex;
+            gap: 0.8rem;
+            margin: 2rem 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .payment-icon {
+            background: var(--black);
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            color: #AAA;
+            border: 1px solid var(--border-gray);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .complete-purchase-btn {
+            width: 100%;
+            margin-top: 1rem;
+            background: var(--neon-green);
+            color: var(--black);
+            font-size: 1.2rem;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .complete-purchase-btn:hover:not(:disabled) {
+            background: transparent;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-neon);
+        }
+        .complete-purchase-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .secure-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #888;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Success message */
+        .success-message {
+            display: none;
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid var(--neon-green);
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-top: 1rem;
+            color: var(--neon-green);
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 2rem 0;
+            background: var(--black);
+            border-top: 1px solid var(--border-gray);
+            margin-top: 2rem;
+        }
+        
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+        }
+        
+        .footer-bottom-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .footer-bottom-links a {
+            color: #666;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-bottom-links a:hover {
+            color: var(--neon-green);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+            .summary-card {
+                position: relative;
+                top: 0;
+            }
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .form-card, .summary-card {
+                padding: 1.5rem;
+            }
+            .container {
+                padding: 0 1rem;
+            }
+            .coupon-row {
+                flex-direction: column;
+            }
+            .apply-coupon-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- BACKGROUND ANIMATION -->
+    <div class="bg-animation">
+        <div class="bg-grid"></div>
+        <div class="bg-glow"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">Design Monks</a>
+                <div class="secure-badge">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="#39FF14"/>
+                    </svg>
+                    <span>Secure Checkout</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PURCHASE PAGE -->
+    <section class="purchase-page">
+        <div class="container">
+            <div class="checkout-grid">
+                <!-- LEFT: BILLING & PAYMENT FORM -->
+                <div class="form-card">
+                    <h2 class="form-title"><span>▶</span> Complete your purchase</h2>
+                    
+                    <!-- STEP 1: SELECT WEBSITE TYPE (with all categories) -->
+                    <div class="website-selector">
+                        <div class="form-group">
+                            <label class="form-label">Select your project type <span>*</span></label>
+                            <select id="websiteTypeSelect" class="form-select">
+                                <option value="" disabled selected>-- Choose a category --</option>
+                                <!-- Values will be populated by JavaScript with dynamic prices -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <form id="purchaseForm">
+                        <!-- CONTACT INFO -->
+                        <fieldset id="contactFields" disabled>
+                            <h3 class="section-header">Contact information</h3>
+                            <div class="form-group">
+                                <label class="form-label">Full Name <span>*</span></label>
+                                <input type="text" class="form-input" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Address <span>*</span></label>
+                                <input type="email" class="form-input" placeholder="john@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mobile Number <span>*</span></label>
+                                <input type="tel" class="form-input" placeholder="+1 (555) 000-9999" required>
+                            </div>
+                        </fieldset>
+
+                        <!-- BILLING ADDRESS -->
+                        <fieldset id="addressFields" disabled>
+                            <h3 class="section-header">Billing address</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Street Address <span>*</span></label>
+                                <input type="text" class="form-input" placeholder="123 Design Street" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">City <span>*</span></label>
+                                    <input type="text" class="form-input" placeholder="San Francisco" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">State <span>*</span></label>
+                                    <input type="text" class="form-input" placeholder="CA" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">ZIP Code <span>*</span></label>
+                                    <input type="text" class="form-input" placeholder="94105" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Country <span>*</span></label>
+                                    <select class="form-select" required>
+                                        <option value="" disabled selected>Select country</option>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="UK">United Kingdom</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- PAYMENT INFO -->
+                        <fieldset id="paymentFields">
+                        
+                        </fieldset>
+
+                        <div class="success-message" id="purchaseSuccess">
+                            ✅ Purchase completed! Your order has been confirmed.
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RIGHT: ORDER SUMMARY -->
+                <div class="summary-card">
+                    <h2 class="summary-title">Order summary</h2>
+                    
+                    <div class="plan-detail">
+                        <span class="plan-name" id="planName">Select a plan</span>
+                        <span class="plan-price" id="planPrice">₹0</span>
+                    </div>
+                    
+                    <!-- COUPON CODE SECTION -->
+                    <div class="coupon-section">
+                        <div class="coupon-row">
+                            <input type="text" id="couponInput" class="coupon-input" placeholder="Coupon code" disabled>
+                            <button id="applyCouponBtn" class="apply-coupon-btn" disabled>Apply</button>
+                        </div>
+                        <div id="couponMessage" class="coupon-message"></div>
+                    </div>
+                    
+                    <div class="summary-breakdown">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">₹0</span>
+                        </div>
+                        <div class="summary-row" id="discountRow" style="display: none;">
+                            <span>Discount</span>
+                            <span id="discountAmount">-₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Tax</span>
+                            <span>₹0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total due today</span>
+                            <span class="total-price" id="totalPrice">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="payment-icons">
+                       
+                    </div>
+
+                    <button class="complete-purchase-btn" id="completePurchaseBtn" disabled>Complete purchase</button>
+                    
+                    <div class="secure-note">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="#39FF14">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                        </svg>
+                        <span>256-bit SSL encrypted</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2025 Design Monks. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            // ===== CENTRAL PRICE CONFIGURATION =====
+            // Change any price here and it will automatically update everywhere
+            const categoryPrices = {
+                'ecommerce': 18400,
+                'business': 2200,
+                'blog': 800,
+                'portfolio': 1200,
+                'news': 2500,
+                'educational': 3000,
+                'nonprofit': 1500,
+                'portal': 3500,
+                'wiki': 2000,
+                'social': 4000,
+                'forum': 1800,
+                'media': 2800,
+                'webapp': 5000,
+                'landing': 600,
+                'crowdfunding': 3200
+            };
+
+            // Category display names
+            const categoryNames = {
+                'ecommerce': 'E-commerce / Online Store',
+                'business': 'Business / Corporate Website',
+                'blog': 'Blog / Personal Website',
+                'portfolio': 'Portfolio Website',
+                'news': 'News & Magazine Site',
+                'educational': 'Educational / E-learning',
+                'nonprofit': 'Non-profit / Informational',
+                'portal': 'Web Portal',
+                'wiki': 'Wiki / Knowledge Base',
+                'social': 'Social Media Platform',
+                'forum': 'Forum / Community / Q&A',
+                'media': 'Media Sharing Site',
+                'webapp': 'Web Application',
+                'landing': 'Landing Page',
+                'crowdfunding': 'Crowdfunding Site'
+            };
+
+            // DOM elements
+            const websiteSelect = document.getElementById('websiteTypeSelect');
+            const contactFields = document.getElementById('contactFields');
+            const addressFields = document.getElementById('addressFields');
+            const paymentFields = document.getElementById('paymentFields');
+            const completeBtn = document.getElementById('completePurchaseBtn');
+            const purchaseForm = document.getElementById('purchaseForm');
+            const successMsg = document.getElementById('purchaseSuccess');
+
+            // Summary elements
+            const planNameSpan = document.getElementById('planName');
+            const planPriceSpan = document.getElementById('planPrice');
+            const subtotalSpan = document.getElementById('subtotal');
+            const totalPriceSpan = document.getElementById('totalPrice');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmountSpan = document.getElementById('discountAmount');
+
+            // Coupon elements
+            const couponInput = document.getElementById('couponInput');
+            const applyBtn = document.getElementById('applyCouponBtn');
+            const couponMessage = document.getElementById('couponMessage');
+
+            // State
+            let basePrice = 0;
+            let discount = 0;
+            let activeCoupon = null;
+
+            // Valid coupons (for demo)
+            const validCoupons = {
+                'SAVE10': 100,
+                'SAVE20': 20,
+                'WELCOME15': 15
+            };
+
+            // Populate dropdown with prices from config
+            function populateDropdown() {
+                let options = '<option value="" disabled selected>-- Choose a category --</option>';
+                
+                for (const [value, price] of Object.entries(categoryPrices)) {
+                    const name = categoryNames[value];
+                    options += `<option value="${value}">${name} - ₹${price}</option>`;
+                }
+                
+                websiteSelect.innerHTML = options;
+            }
+
+            // Update all prices
+            function updatePrices() {
+                const subtotal = basePrice;
+                const discountAmount = subtotal * discount / 100;
+                const discountedPrice = subtotal - discountAmount;
+                
+                planPriceSpan.textContent = `₹${subtotal}`;
+                subtotalSpan.textContent = `₹${subtotal}`;
+                
+                if (discount > 0) {
+                    discountRow.style.display = 'flex';
+                    discountAmountSpan.textContent = `-₹${discountAmount}`;
+                } else {
+                    discountRow.style.display = 'none';
+                }
+                
+                totalPriceSpan.textContent = `₹${Math.round(discountedPrice)}`;
+            }
+
+            // Enable/disable form sections
+            function toggleFormSections(enable) {
+                [contactFields, addressFields, paymentFields].forEach(fieldset => {
+                    fieldset.disabled = !enable;
+                });
+                completeBtn.disabled = !enable;
+                couponInput.disabled = !enable;
+                applyBtn.disabled = !enable;
+                
+                if (!enable) {
+                    couponInput.value = '';
+                    couponMessage.textContent = '';
+                    discount = 0;
+                    updatePrices();
+                }
+            }
+
+            // Update summary based on selection
+            function updateSummary(selectedValue) {
+                if (!selectedValue) {
+                    planNameSpan.textContent = 'Select a plan';
+                    basePrice = 0;
+                    discount = 0;
+                    updatePrices();
+                    return;
+                }
+
+                planNameSpan.textContent = categoryNames[selectedValue] || 'Website Project';
+                basePrice = categoryPrices[selectedValue] || 0;
+                discount = 0;
+                couponInput.value = '';
+                couponMessage.textContent = '';
+                updatePrices();
+            }
+
+            // Handle website type change
+            websiteSelect.addEventListener('change', function(e) {
+                const value = e.target.value;
+                toggleFormSections(!!value);
+                updateSummary(value);
+            });
+
+            // Apply coupon
+            applyBtn.addEventListener('click', function() {
+                const code = couponInput.value.trim().toUpperCase();
+                
+                if (!code) {
+                    couponMessage.textContent = 'Please enter a coupon code';
+                    couponMessage.className = 'coupon-message error';
+                    return;
+                }
+
+                if (activeCoupon === code) {
+                    couponMessage.textContent = 'Coupon already applied';
+                    couponMessage.className = 'coupon-message error';
+                    return;
+                }
+
+                const discountValue = validCoupons[code];
+                
+                if (discountValue) {
+                    discount = discountValue;
+                    activeCoupon = code;
+                    couponMessage.textContent = `${discountValue}% discount applied!`;
+                    couponMessage.className = 'coupon-message success';
+                    updatePrices();
+                } else {
+                    couponMessage.textContent = 'Invalid coupon code';
+                    couponMessage.className = 'coupon-message error';
+                    discount = 0;
+                    activeCoupon = null;
+                    updatePrices();
+                }
+            });
+
+            // Initialize dropdown
+            populateDropdown();
+            
+            // Initial state
+            toggleFormSections(false);
+            updateSummary(null);
+
+            // Purchase simulation
+            function simulatePurchase() {
+                if (!websiteSelect.value) {
+                    alert('Please select a project type first.');
+                    return;
+                }
+
+                const requiredInputs = purchaseForm.querySelectorAll('[required]');
+                let allValid = true;
+
+                requiredInputs.forEach(input => {
+                    const fieldset = input.closest('fieldset');
+                    if (fieldset && fieldset.disabled) return;
+                    
+                    if (!input.value.trim()) {
+                        allValid = false;
+                        input.style.borderColor = 'red';
+                    } else {
+                        input.style.borderColor = '';
+                    }
+                });
+
+                if (!allValid) {
+                    alert('Please fill in all mandatory fields.');
+                    return;
+                }
+
+                completeBtn.textContent = 'Processing...';
+                completeBtn.disabled = true;
+
+                setTimeout(() => {
+                    successMsg.style.display = 'block';
+                    completeBtn.textContent = 'Complete purchase';
+                    completeBtn.disabled = false;
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                    }, 5000);
+                }, 1500);
+            }
+
+            completeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                simulatePurchase();
+            });
+
+            purchaseForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                simulatePurchase();
+            });
+
+            // Reset red borders
+            purchaseForm.querySelectorAll('input, select').forEach(field => {
+                field.addEventListener('input', function() {
+                    this.style.borderColor = '';
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
