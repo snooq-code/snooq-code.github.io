@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>SNOOQ · indian aesthetic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Fix for image loading */
+        .hero-image img, .product-image img, .lookbook-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #f0e8de;
+        }
+        
+        /* Placeholder style */
+        .image-placeholder {
+            background: linear-gradient(135deg, #f0e8de 0%, #e2d6ca 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b65f3a;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Ensure products show properly */
+        .product-item {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            background: #f0e8de;
+            min-height: 200px;
+        }
+
+        /* Mobile Menu Fixes */
+        .menu-overlay {
+            display: none;
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            background: #faf7f2;
+            z-index: 1000;
+            border-bottom: 2px solid #b65f3a;
+            padding: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .menu-overlay.active {
+            display: block !important;
+        }
+
+        /* Login Form Styles */
+        .login-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #dacfc4;
+        }
+
+        .login-toggle {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .login-toggle button {
+            background: none;
+            border: 1px solid #b65f3a;
+            color: #b65f3a;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .login-toggle button:hover {
+            background: #b65f3a;
+            color: white;
+        }
+
+        .login-form {
+            display: none;
+            padding: 1rem;
+            background: #f0e8de;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .close-login {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #7d5f4b;
+        }
+
+        .close-login:hover {
+            color: #dc3545;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid #e2d6ca;
+            border-radius: 12px;
+            font-family: 'Outfit';
+            font-size: 0.9rem;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #b65f3a;
+        }
+
+        .login-form button[type="button"] {
+            width: 100%;
+            padding: 0.8rem;
+            background: #b65f3a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .login-form button:hover {
+            background: #2c241e;
+        }
+
+        .login-error {
+            color: #dc3545;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .admin-badge {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: #f0e8de;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: #7d5f4b;
+        }
+
+        .admin-badge i {
+            color: #b65f3a;
+        }
+
+        /* Animation for notifications */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- MOBILE HEADER -->
+        <div class="mobile-header">
+            <div class="logo" onclick="window.location='index.html'">SNOOQ<span>india</span></div>
+            <div class="right-actions">
+                <button class="icon-btn" id="searchToggle"><i class="fas fa-search"></i></button>
+                <button class="icon-btn" id="bagToggle"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount" style="display:none;">0</span></button>
+                <button class="icon-btn" id="menuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+
+        <!-- FULLSCREEN MOBILE MENU -->
+        <div class="menu-overlay" id="mobileMenu">
+            <div class="menu-grid">
+                <div class="menu-cat">
+                    <p>shop</p>
+                    <ul>
+                        <li><a href="shop.html?filter=new">new arrivals</a></li>
+                        <li><a href="shop.html?filter=bestseller">bestsellers</a></li>
+                        <li><a href="shop.html?filter=offer">offers</a></li>
+                        <li><a href="shop.html?cat=hoodies">hoodies</a></li>
+                        <li><a href="shop.html?cat=full%20sleeve">full sleeve</a></li>
+                        <li><a href="shop.html?cat=half%20sleeve">half sleeve</a></li>
+                    </ul>
+                </div>
+                <div class="menu-cat">
+                    <p>discover</p>
+                    <ul>
+                        <li><a href="lookbook.html">lookbook</a></li>
+                        <li><a href="#">studio</a></li>
+                        <li><a href="#">sustainability</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="menu-account">
+                <div class="account-row">
+                    <a href="profile.html"><i class="far fa-user"></i> profile</a>
+                    <a href="wishlist.html"><i class="far fa-heart"></i> wishlist</a>
+                    <a href="orders.html"><i class="fas fa-box"></i> orders</a>
+                </div>
+            </div>
+            
+            <!-- LOGIN SECTION -->
+            <div class="login-section">
+                <div class="login-toggle">
+                    <button onclick="toggleLoginForm(event)"><i class="fas fa-lock"></i> admin access</button>
+                </div>
+                
+                <div class="login-form" id="loginForm">
+                    <button class="close-login" onclick="closeLoginForm()">&times;</button>
+                    <input type="email" id="loginEmail" placeholder="email address" value="admin@snooq.com">
+                    <input type="password" id="loginPassword" placeholder="password" value="admin123">
+                    <button type="button" onclick="adminLogin(event)">login to admin panel</button>
+                    <div class="login-error" id="loginError">Invalid email or password</div>
+                </div>
+                
+                <div class="admin-badge">
+                    <i class="fas fa-shield-alt"></i> secure admin access
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORY SCROLL -->
+        <div class="category-scroll">
+            <span class="cat-item active" onclick="filterCategory('all')"><i class="fas fa-tshirt"></i> all</span>
+            <span class="cat-item" onclick="filterCategory('hoodies')"><i class="fas fa-tshirt"></i> hoodies</span>
+            <span class="cat-item" onclick="filterCategory('full sleeve')"><i class="fas fa-tshirt"></i> full sleeve</span>
+            <span class="cat-item" onclick="filterCategory('half sleeve')"><i class="fas fa-tshirt"></i> half sleeve</span>
+            <span class="cat-item" onclick="window.location='shop.html?filter=offer'"><i class="fas fa-tags"></i> offers</span>
+            <span class="cat-item" onclick="window.location='shop.html?filter=new'"><i class="fas fa-star"></i> new</span>
+            <span class="cat-item" onclick="window.location='shop.html?filter=bestseller'"><i class="fas fa-fire"></i> bestsellers</span>
+        </div>
+
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="hero-text">
+                <h1><span>indian aesthetic</span> SNOOQ street</h1>
+                <div class="hero-desc">Handcrafted in India · organic cotton · unique block prints</div>
+                <button class="btn" onclick="window.location='shop.html'"> explore now <i class="fas fa-arrow-right"></i> </button>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-image">
+                    <img src="https://via.placeholder.com/400x400/b65f3a/ffffff?text=SNOOQ" alt="SNOOQ hero">
+                </div>
+            </div>
+        </section>
+
+        <!-- INFINITE SCROLLER -->
+        <div class="infinite-scroll-section">
+            <div class="scroll-track">
+                <span class="scroll-item"><i class="fas fa-tag"></i> free shipping india</span>
+                <span class="scroll-item"><i class="fas fa-leaf"></i> hand block print</span>
+                <span class="scroll-item"><i class="fas fa-indian-rupee-sign"></i> pay on delivery</span>
+                <span class="scroll-item"><i class="fas fa-rotate-left"></i> 7 days return</span>
+                <span class="scroll-item"><i class="fas fa-star"></i> organic cotton</span>
+                <span class="scroll-item"><i class="fas fa-tag"></i> free shipping india</span>
+                <span class="scroll-item"><i class="fas fa-leaf"></i> hand block print</span>
+                <span class="scroll-item"><i class="fas fa-indian-rupee-sign"></i> pay on delivery</span>
+                <span class="scroll-item"><i class="fas fa-rotate-left"></i> 7 days return</span>
+                <span class="scroll-item"><i class="fas fa-star"></i> organic cotton</span>
+            </div>
+        </div>
+
+        <!-- BANNER CONTAINER (DYNAMIC) -->
+        <div id="bannerContainer"></div>
+
+        <!-- NEW ARRIVALS SECTION -->
+        <div class="section-title">new arrivals <span>fresh</span></div>
+        <div class="product-grid" id="newArrivalsGrid">
+            <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+
+        <!-- BESTSELLERS SECTION -->
+        <div class="section-title">bestsellers <span>top picks</span></div>
+        <div class="product-grid" id="bestsellersGrid">
+            <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+
+        <!-- OFFERS SECTION -->
+        <div class="section-title">special offers <span>30% off</span></div>
+        <div class="product-grid" id="offersGrid">
+            <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+
+        <!-- LOOKBOOK -->
+        <div class="section-title">lookbook <span>aesthetic</span></div>
+        <div class="lookbook-grid">
+            <div class="lookbook-card" onclick="window.location='lookbook.html'">
+                <div class="lookbook-image">
+                    <img src="https://via.placeholder.com/600x400/b65f3a/ffffff?text=Jaipur+Studio" alt="Jaipur studio">
+                </div>
+                <div class="lookbook-content">
+                    <i class="fas fa-camera-retro"></i>
+                    <h3>jaipur studio</h3>
+                    <p>Block prints from sanganer</p>
+                    <button class="btn-outline">view →</button>
+                </div>
+            </div>
+            <div class="lookbook-card" onclick="window.location='lookbook.html'">
+                <div class="lookbook-image">
+                    <img src="https://via.placeholder.com/600x400/2b6c5e/ffffff?text=Street+Edit" alt="Street edit">
+                </div>
+                <div class="lookbook-content">
+                    <i class="fas fa-film"></i>
+                    <h3>street edit</h3>
+                    <p>Shot in delhi · modern indian</p>
+                    <button class="btn-outline">watch →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURE ROW -->
+        <div class="feature-row">
+            <div class="feature-block">
+                <i class="fas fa-ruler"></i>
+                <h4>size guide</h4>
+                <p>indian sizing</p>
+                <button onclick="alert('📏 Size guide: S(38), M(40), L(42), XL(44), XXL(46)')">measure</button>
+            </div>
+            <div class="feature-block">
+                <i class="fas fa-leaf"></i>
+                <h4>handcrafted</h4>
+                <p>organic cotton</p>
+                <button onclick="alert('🌿 Handcrafted with natural dyes by artisans from Jaipur, Gujarat and Rajasthan')">ethos</button>
+            </div>
+            <div class="feature-block">
+                <i class="fas fa-store"></i>
+                <h4>studio store</h4>
+                <p>delhi, mumbai, jaipur</p>
+                <button onclick="alert('📍 Studio stores: Hauz Khas (Delhi), Bandra (Mumbai), C-Scheme (Jaipur)')">locate</button>
+            </div>
+        </div>
+
+        <!-- NEWSLETTER -->
+        <div class="newsletter">
+            <h3>get 10% off</h3>
+            <div class="newsletter-flex">
+                <input type="email" placeholder="your email" id="newsletterEmail">
+                <button id="newsletterBtn">subscribe</button>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <div>© SNOOQ — made in india</div>
+            <div class="socials">
+                <i class="fab fa-instagram" onclick="window.open('https://instagram.com')"></i>
+                <i class="fab fa-pinterest" onclick="window.open('https://pinterest.com')"></i>
+                <i class="fab fa-youtube" onclick="window.open('https://youtube.com')"></i>
+                <i class="fab fa-whatsapp" onclick="window.open('https://wa.me/919876543210')"></i>
+            </div>
+        </footer>
+    </div>
+
+    <!-- BOTTOM POPUP NAVIGATION -->
+    <div class="bottom-popup">
+        <div class="bottom-icon active" onclick="window.location='index.html'">
+            <i class="fas fa-home"></i>
+            <span>home</span>
+        </div>
+        <div class="bottom-icon" onclick="window.location='wishlist.html'">
+            <i class="far fa-heart"></i>
+            <span>favourite</span>
+        </div>
+        <div class="bottom-icon" onclick="window.location='orders.html'">
+            <i class="fas fa-box"></i>
+            <span>orders</span>
+        </div>
+        <div class="bottom-icon" onclick="window.location='profile.html'">
+            <i class="far fa-user"></i>
+            <span>profile</span>
+        </div>
+    </div>
+
+    <!-- SCRIPTS - ONLY KEEP ERROR HANDLING AND LOGIN FUNCTIONS -->
+    <script>
+    // Error handling for script loading
+    window.addEventListener('error', function(e) {
+        if (e.target.tagName === 'SCRIPT') {
+            console.error('Failed to load script:', e.target.src);
+        }
+    }, true);
+    </script>
+    
+    <script src="js/database.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- ONLY LOGIN FUNCTIONS REMAIN HERE -->
+    <script>
+        // ============= LOGIN FORM FUNCTIONS =============
+        function toggleLoginForm(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const form = document.getElementById('loginForm');
+            form.classList.toggle('active');
+        }
+
+        function closeLoginForm() {
+            document.getElementById('loginForm').classList.remove('active');
+        }
+
+        function adminLogin(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Get admin credentials from localStorage or use defaults
+            const admin = JSON.parse(localStorage.getItem('snooq_admin')) || {
+                username: 'admin',
+                password: 'admin123',
+                email: 'admin@snooq.com'
+            };
+            
+            // Check credentials (accept both username and email)
+            if ((email === admin.email || email === admin.username) && password === admin.password) {
+                window.location.href = 'admin/index.html';
+            } else {
+                document.getElementById('loginError').classList.add('show');
+                
+                setTimeout(() => {
+                    document.getElementById('loginError').classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Close login form when clicking outside
+        document.addEventListener('click', function(event) {
+            const loginForm = document.getElementById('loginForm');
+            const loginToggle = document.querySelector('.login-toggle button');
+            
+            if (loginForm && loginToggle && loginForm.classList.contains('active')) {
+                if (!loginForm.contains(event.target) && !loginToggle.contains(event.target)) {
+                    loginForm.classList.remove('active');
+                }
+            }
+        });
+
+        // Simple category filter function
+        function filterCategory(category) {
+            window.location.href = `shop.html?cat=${encodeURIComponent(category)}`;
+        }
+    </script>
+</body>
+</html>
